@@ -2,23 +2,27 @@
 // by pts@fazekas.hu at Fri Sep  4 11:01:47 CEST 2009
 
 // Instantiate variables in the equation (list of variables) eq. Returns
-// a bool indicating if there is a solution.
-function inst(eq, vars) {
+// null on contradiction, or the new insti.
+function inst(eq, vars, insts, insti) {
   var eql = eq.length;
-  var i, j, v;
+  var i, j, v, eqj;
   var nulli1 = null, nulli2 = null;
   for (i = 0; i < eql; ++i) {
     v = vars[eq[i]];
     if (v == true) {
       for (j = 0; j < eql; ++j) {
+        // more than one ``true''
+        if (vars[eq[j]] == true && i != j) return null;
+      }
+      for (j = 0; j < eql; ++j) {
+        eqj = eq[j];
         v = vars[eq[j]];
-        if (v == true) {
-          if (j != i) return false;  // more than one ``true''
-        } else if (v == null) {
-          vars[eq[j]] = false;
+        if (v == null) {
+          vars[eqj] = false;
+          insts[insti++] = eqj;
         }
       }
-      return true;
+      return insti;
     } else if (v == null) {
       if (nulli1 == null) {
         nulli1 = i;
@@ -27,40 +31,62 @@ function inst(eq, vars) {
       }
     }
   }
-  if (nulli1 == null) return false;  // all ``false''
-  if (nulli2 == null) vars[eq[nulli1]] = true;
-  return true;
+  if (nulli1 == null) return null;  // all ``false''
+  if (nulli2 == null) {
+    eqj = eq[nulli1];
+    vars[eqj] = true;
+    insts[insti++] = eqj;
+  }
+  return insti;
 }
 
-// Copies an array of integers.
-//function copyIntArray(ary) {
-//  return ary.length ? ary.join(',').split(',') : [];
-//}
-
 // The callback will be called with vars for each different solution.
-function solve(eqs, vars, callback) {
-  print('S' + vars);
+function solve(eqs, vars, callback, insts, insti) {
+  //print('S ' + vars);
   var eqsl = eqs.length;
   var varl = vars.length;
-  var i;
-  for (i = 0; i < eqsl; ++i) {
-    if (!inst(eqs[i], vars)) return;
+  var insti0 = insti;
+  var i, insti2;
+  while (true) {
+    //print('Q ' + vars)
+    for (i = 0; i < eqsl; ++i) {
+      insti2 = inst(eqs[i], vars, insts, insti);
+      //print('T' + i + insti2);
+      if (insti2 == null) {
+        i = -1;
+        break;
+      }
+      insti = insti2;
+    }
+    if (i < 0) break;
+    //print('I ' + vars);
+    i = 0;  // TODO(pts): Pass this as well.
+    while (i < varl && vars[i] != null) ++i;
+    // !! varl can be less than vars.length
+    if (i == varl) {  // all variables are known
+      callback(vars);
+      break;
+    } else {
+      vars[i] = false;
+      insts[insti++] = i;
+      // TODO(pts): Pass i as an argument.
+      solve(eqs, vars, callback, insts, insti);
+      vars[i] = true;
+      // Continue the while loop with ``true'', just as with:
+      // solve(eqs, vars, callback, insts, insti); break;
+    }
   }
-  print('I' + vars);
-  var nulli = 0;
-  while (nulli < varl && vars[nulli] != null) ++nulli;
-  if (nulli == varl) {  // all variables are known
-    callback(vars);
-  } else {
-    vars[nulli] = false;
-    // TODO(pts): Pass nulli as an argument.
-    solve(eqs, vars, callback);
-    vars[nulli] = true;
-    solve(eqs, vars, callback);  // TODO(pts): Maybe tail recursion?
-    vars[nulli] = null;
+  while (insti > insti0) {
+    vars[insts[--insti]] = null;
   }
 }
 
 var vars = [null, null, null, null];
-var eqs  = [[1, 2, 3]];
-solve(eqs, vars, print);
+var eqs  = [[1, 2, 3], [0, 2]];
+var insts = Array(4);
+solve(eqs, vars, print, insts, 0);
+
+//var vars = [false, true, true, false];
+//var eqs  = [[1, 2, 3], [0, 2]];
+//var insts = Array(4);
+//print(inst([1, 2, 3], vars, insts, 0));
