@@ -21,6 +21,7 @@ function inst(eq, vars, insts, insti) {
   var i, j, v, eqj;
   var nulli1 = null, nulli2 = null;
   // TODO(pts): Micro-optimize this function.
+  // TODO(pts): Move an equation to the end if all variables found.
   for (i = 0; i < eql; ++i) {
     v = vars[eq[i]];
     if (v == true) {
@@ -383,7 +384,7 @@ var problem7 = [5,0,0,0,0,0,0,0,9,
                 0,6,0,0,0,4,0,2,0,
                 9,0,0,0,0,0,0,0,5];
 // 5,3,6,4,7,2,1,8,9,4,2,9,1,8,3,5,7,6,1,7,8,9,6,5,3,4,2,7,4,1,6,9,8,2,5,3,6,8,2,3,5,1,4,9,7,3,9,5,2,4,7,6,1,8,2,5,3,7,1,9,8,6,4,8,6,7,5,3,4,9,2,1,9,1,4,8,2,6,7,3,5
-//print('SUMCH' + sudoku(problem7, print, true));
+print('SUMCH' + sudoku(problem7, print, true));
 
 // http://www.sudoku.com/boards/viewtopic.php?t=6539&start=0
 // Lots of more, similar puzzles on the site above.
