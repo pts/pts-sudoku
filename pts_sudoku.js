@@ -296,8 +296,6 @@ var problemc = [0,0,0,2,7,0,6,0,0,
                 6,0,0,9,0,0,0,0,3,
                 0,0,4,0,2,3,0,0,0];
 print('SUMCH' + sudoku(problemc, print));
-zzzz;
-
 
 print('--- 1:')
 var problem1 = [1,0,0,0,
